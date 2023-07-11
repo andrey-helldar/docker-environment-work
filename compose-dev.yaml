@@ -1,0 +1,127 @@
+version: '3'
+
+services:
+    postgres:
+        build: postgres
+        shm_size: 1g
+        ports:
+            - '${FORWARD_DB_PORT:-5432}:5432'
+        environment:
+            PGPASSWORD: '${DB_PASSWORD:-dev}'
+            POSTGRES_DB: '${DB_DATABASE:-default}'
+            POSTGRES_USER: '${DB_USERNAME:-dev}'
+            POSTGRES_PASSWORD: '${DB_PASSWORD:-dev}'
+            POSTGRES_VERSION: '${POSTGRES_VERSION:-14-alpine}'
+        volumes:
+            - 'postgres:/var/lib/postgresql/data'
+            - './postgres/create-testing-database.sql:/docker-entrypoint-initdb.d/10-create-testing-database.sql'
+        networks:
+            - dev
+        healthcheck:
+            test: [ "CMD", "pg_isready", "-q", "-d", "${DB_DATABASE:-default}", "-U", "${DB_USERNAME:-dev}" ]
+            retries: 3
+            timeout: 5s
+
+    pgadmin:
+        image: 'dpage/pgadmin4:${PGADMIN_VERSION:-latest}'
+        environment:
+            - 'PGADMIN_DEFAULT_EMAIL=${PGADMIN_DEFAULT_EMAIL:-dev@example.com}'
+            - 'PGADMIN_DEFAULT_PASSWORD=${PGADMIN_DEFAULT_PASSWORD:-dev}'
+        ports:
+            - '${PGADMIN_PORT:-5050}:80'
+        volumes:
+            - pgadmin:/var/lib/pgadmin
+        networks:
+            - dev
+        depends_on:
+            - postgres
+
+    redis:
+        image: 'redis:alpine'
+        ports:
+            - '${FORWARD_REDIS_PORT:-6379}:6379'
+        networks:
+            - dev
+        healthcheck:
+            test: [ "CMD", "redis-cli", "ping" ]
+            retries: 3
+            timeout: 5s
+
+    redis-webui:
+        image: 'erikdubbelboer/phpredisadmin:latest'
+        environment:
+            - 'REDIS_1_HOST=${REDIS_WEBUI_CONNECT_HOST:-redis}'
+            - 'REDIS_1_PORT=${REDIS_WEBUI_CONNECT_PORT:-6379}'
+        volumes:
+            - './redis/includes/config.sample.inc.php:/src/app/includes/config.sample.inc.php'
+        ports:
+            - '${REDIS_WEBUI_PORT:-9987}:80'
+        networks:
+            - dev
+        depends_on:
+            - redis
+
+    rabbitmq:
+        build: './rabbitmq'
+        ports:
+            - '${RABBITMQ_NODE_HOST_PORT:-5672}:5672'
+            - '${RABBITMQ_MANAGEMENT_HTTP_HOST_PORT:-15672}:15672'
+            - '${RABBITMQ_MANAGEMENT_HTTPS_HOST_PORT:-15671}:15671'
+            - '${RABBITMQ_WEB_STOMP_HOST_PORT:-15674}:15674'
+        privileged: true
+        hostname: rabbitmq
+        volumes:
+            - ./rabbitmq/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf
+            - ./rabbitmq/management_agent.disable_metrics_collector.conf:/etc/rabbitmq/conf.d/management_agent.disable_metrics_collector.conf
+        networks:
+            - dev
+
+    elasticsearch:
+        build:
+            context: ./elasticsearch
+            args:
+                - ELK_VERSION=${ELK_VERSION:-8.6.1}
+        volumes:
+            - elasticsearch:/usr/share/elasticsearch/data
+        environment:
+            - 'cluster.name=dev-cluster'
+            - 'node.name=dev-node'
+            - 'bootstrap.memory_lock=true'
+            - 'xpack.security.enabled=false'
+            - 'xpack.security.transport.ssl.enabled=false'
+            - 'ES_JAVA_OPTS=-Xms2g -Xmx2g'
+            - 'cluster.initial_master_nodes=dev-node'
+            - 'transport.host=127.0.0.1'
+            - 'http.host=0.0.0.0'
+        ulimits:
+            memlock:
+                soft: -1
+                hard: -1
+            nofile:
+                soft: 65536
+                hard: 65536
+        ports:
+            - '9200:9200'
+            - '9300:9300'
+        networks:
+            - dev
+
+    mailhog:
+        image: 'mailhog/mailhog:latest'
+        ports:
+            - '${FORWARD_MAILHOG_PORT:-1025}:1025'
+            - '${FORWARD_MAILHOG_DASHBOARD_PORT:-8025}:8025'
+        networks:
+            - dev
+
+volumes:
+    postgres:
+        driver: local
+    pgadmin:
+        driver: local
+    elasticsearch:
+        driver: local
+
+networks:
+    dev:
+        driver: bridge
