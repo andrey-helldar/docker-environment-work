@@ -14,7 +14,7 @@ services:
             POSTGRES_VERSION: '${POSTGRES_VERSION:-14-alpine}'
         volumes:
             - 'postgres:/var/lib/postgresql/data'
-            - './postgres/create-testing-database.sql:/docker-entrypoint-initdb.d/10-create-testing-database.sql'
+            #- './postgres/create-testing-database.sql:/docker-entrypoint-initdb.d/10-create-testing-database.sql'
         networks:
             - dev
         healthcheck:
