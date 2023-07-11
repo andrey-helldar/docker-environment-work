@@ -33,4 +33,4 @@ If you do not specify the path to the folder at the time of creation, then the r
 - `~/.docker/devenvironmentswork` for Unix
 - `%USERPROFILE%\.docker\devenvironmentswork\` for Windows
 
-By default, `Dev Environments` loads and starts all services.
+By default, `Docker Dev Environments` loads and starts all services.
