@@ -80,7 +80,7 @@ services:
         build:
             context: ./elasticsearch
             args:
-                - ELK_VERSION=${ELK_VERSION:-8.8.1}
+                - ELK_VERSION=${ELK_VERSION:-8.10.1}
         volumes:
             - elasticsearch:/usr/share/elasticsearch/data
         environment:
