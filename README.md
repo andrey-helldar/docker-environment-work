@@ -30,7 +30,7 @@ REDIS_WEBUI_PORT = 9987
 
 If you do not specify the path to the folder at the time of creation, then the repository is cloned to the default path:
 
-- `~/.docker/devenvironments` for Unix
-- `%USERPROFILE%\.docker\devenvironments\` for Windows
+- `~/.docker/devenvironmentswork` for Unix
+- `%USERPROFILE%\.docker\devenvironmentswork\` for Windows
 
 By default, `Docker Dev Environments` loads and starts all services.
