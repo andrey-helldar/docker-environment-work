@@ -4,6 +4,7 @@
 
 ## List of services
 
+* MySQL
 * PostgreSQL - pgAdmin
 * Redis + Admin
 * RabbitMQ
