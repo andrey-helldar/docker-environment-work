@@ -2,9 +2,9 @@
 
 <img src="https://preview.dragon-code.pro/andrey-helldar/dev-environment.svg?brand=docker" alt="Docker Environment"/>
 
-> DEPRECATED
+> [!WARNING]
 >
-> Use [Docker Environment](https://github.com/andrey-helldar/docker-environment) instead.
+> THis repository is deprecated. Use [Docker Environment](https://github.com/andrey-helldar/docker-environment) instead.
 
 ## List of services
 
